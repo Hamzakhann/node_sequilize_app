@@ -84,18 +84,24 @@ const User = connection.define("User" , {
     }
 });
 const Post = connection.define("Post" , {
-    id:{
-        primaryKey:true,
-        type:Sequelize.UUID,
-        defaultValue:Sequelize.UUIDV4
-    },
+    // id:{
+    //     primaryKey:true,
+    //     type:Sequelize.UUID,
+    //     defaultValue:Sequelize.UUIDV4
+    // },
     title:Sequelize.STRING,
     content:Sequelize.TEXT
+});
+const Comment = connection.define("Comment" , {
+    the_comment:Sequelize.STRING
 });
 
 
 
+
 Post.belongsTo(User,{foreignKey:"userId"});
+Post.hasMany(Comment,{as:'All_Comments'});
+
 connection
 .sync({
     logging:console.log,
@@ -116,6 +122,20 @@ connection
 app.get('/allPost' , (req, res)=>{
     Post.findAll({
         include:[User]
+    })
+    .then(posts=>{
+        res.json(posts)
+    })
+    .catch(err=>{
+        res.status(400).send(err)
+    })
+})
+app.get('/singlePost' , (req, res)=>{
+    Post.findByPk('1',{
+        include:[{
+            model:Comment, as:"All_Comments",
+            attributes:['the_comment']
+        }]
     })
     .then(posts=>{
         res.json(posts)
